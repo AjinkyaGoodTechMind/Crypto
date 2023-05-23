@@ -4,6 +4,23 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 var logger = require("morgan");
 var path = require("path");
+var cors = require("cors");
+
+const corsOptions = {
+  origin: "http://localhost:3000/",
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Headers", true);
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+  next();
+});
 
 // Static Middleware
 const public = path.resolve(__dirname, "public");
