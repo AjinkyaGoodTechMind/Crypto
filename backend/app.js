@@ -4,9 +4,9 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 var logger = require("morgan");
 var path = require("path");
-const cors = require("cors");
+// const cors = require("cors");
 
-app.use(cors());
+// app.use(cors());
 // Static Middleware
 const public = path.resolve(__dirname, "public");
 app.use(express.static(public));
@@ -28,8 +28,11 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
 }
 
 const sessionRoutes = require("./routes/sessionRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 app.use("/api/session", sessionRoutes);
+
+app.use("/api/user", userRoutes);
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 

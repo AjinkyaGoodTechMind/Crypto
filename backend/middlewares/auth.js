@@ -3,19 +3,16 @@ const User = require("../schemas/userSchema");
 require("dotenv").config();
 
 exports.isAuthenticated = async (req, res, next) => {
-  let token;
-  const cookies = req.cookies;
+  const token = req.header("jwt");
 
-  if (!cookies?.jwt) {
+  if (!token) {
     return res.status(401).send("Not Authorized, No token");
   }
 
   try {
-    token = cookies.jwt;
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findOne({ _id: decoded.id }, { password: false });
+    const user = await User.findOne({ _id: decoded.id });
 
     if (user) {
       req.user = user;

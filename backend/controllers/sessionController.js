@@ -15,14 +15,8 @@ const sessionController = {
 
   register: async (req, res, next) => {
     try {
-      const { username, email, password, contactNumber } = req.body;
-
-      console.log(username, email, password, contactNumber);
-
-      if (!email || !password) {
-        res.status(400).send("Please Add ALL Fields");
-      }
-
+      const { email, password } = req.body;
+      const image = req.file;
       const userExists = await UserSchema.findOne({ email }).lean();
 
       if (userExists) {
@@ -30,14 +24,20 @@ const sessionController = {
       } else {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+        const userCreated = {};
+        if (image) {
+          const filePath = `/${image.destination}/${image.filename}`;
 
-        const userCreated = await UserSchema.create({ email, password: hashedPassword, username, contactNumber });
+          userCreated = await UserSchema.create({ ...req.body, password: hashedPassword, profilePic: filePath });
+        } else {
+          userCreated = await UserSchema.create({ ...req.body, password: hashedPassword });
+        }
 
         if (userCreated) {
           const accessToken = jwt.sign({ id: userCreated._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
           res.cookie("jwt", accessToken, { httpOnly: true, maxAge: process.env.SESSION_EXPIRE * 60 * 60 * 1000 });
           const user = userCreated;
-          res.status(201).json({ user });
+          res.status(201).json({ user, accessToken });
         } else {
           res.status(400).send("Invalid User Data");
         }
@@ -66,7 +66,7 @@ const sessionController = {
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
         res.cookie("jwt", accessToken, { httpOnly: true });
-        res.status(200).json({ user });
+        res.status(200).json({ user, accessToken });
       }
     } catch (error) {
       return next(createError.InternalServerError(error));
@@ -78,10 +78,10 @@ const sessionController = {
       const cookies = req.cookies;
       if (!cookies?.jwt) {
         return res.sendStatus(204); //No Content
+      } else {
+        res.clearCookie("jwt", { httpOnly: true });
+        res.sendStatus(204);
       }
-
-      res.clearCookie("jwt", { httpOnly: true });
-      res.sendStatus(204);
     } catch (error) {
       return next(createError.InternalServerError(error));
     }
@@ -97,6 +97,21 @@ const sessionController = {
       } else {
         await UserSchema.findOneAndUpdate({ _id: req.user._id }, { $set: { ...req.body } });
       }
+
+      res.sendStatus(204);
+    } catch (error) {
+      return next(createError.InternalServerError(error));
+    }
+  },
+
+  changePassword: async (req, res, next) => {
+    try {
+      const { password } = req.body;
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      await UserSchema.findOneAndUpdate({ _id: req.user._id }, { $set: { password: hashedPassword } });
 
       res.sendStatus(204);
     } catch (error) {

@@ -19,7 +19,9 @@ const upload = multer({
 
 router.get("/getSession", isAuthenticated, sessionController.getSession);
 
-router.post("/register", sessionController.register);
+router.put("/changePassword", isAuthenticated, sessionController.changePassword);
+
+router.post("/register", upload.single("profilePic"), sessionController.register);
 
 router.post("/login", sessionController.login);
 
