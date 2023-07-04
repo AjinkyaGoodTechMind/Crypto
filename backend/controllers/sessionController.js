@@ -24,7 +24,7 @@ const sessionController = {
       } else {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const userCreated = {};
+        let userCreated = {};
         if (image) {
           const filePath = `/${image.destination}/${image.filename}`;
 
