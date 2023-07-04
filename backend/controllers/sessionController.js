@@ -67,6 +67,8 @@ const sessionController = {
 
         res.cookie("jwt", accessToken, { httpOnly: true });
         res.status(200).json({ user, accessToken });
+      } else {
+        res.status(401).json("Incorrect Email or password");
       }
     } catch (error) {
       return next(createError.InternalServerError(error));
