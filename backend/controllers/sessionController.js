@@ -7,7 +7,7 @@ const sessionController = {
   getSession: async (req, res, next) => {
     try {
       const user = req.user;
-      res.json({ user });
+      res.status(200).json({ user });
     } catch (error) {
       return next(createError.InternalServerError(error));
     }

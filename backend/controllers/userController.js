@@ -4,11 +4,20 @@ const UserSoldCoinsSchema = require("../schemas/userSoldCoinsSchema");
 const createError = require("http-errors");
 
 const userController = {
+  newRate: async (req, res, next) => {
+    try {
+      const price = await GeniusCoinSchema.create({ price: req.body.price });
+
+      res.status(200).json({ price });
+    } catch (error) {
+      return next(createError.InternalServerError(error));
+    }
+  },
   getTodaysRate: async (req, res, next) => {
     try {
       const price = await GeniusCoinSchema.find().limit(1).sort({ $natural: -1 });
 
-      res.json({ price });
+      res.status(200).json(price[0]);
     } catch (error) {
       return next(createError.InternalServerError(error));
     }
@@ -17,9 +26,9 @@ const userController = {
     try {
       const users = await UserSchema.find();
 
-      const totalUsers = users.length();
+      const totalUsers = users.length;
 
-      res.json({ totalUsers });
+      res.status(200).json({ totalUsers });
     } catch (error) {
       return next(createError.InternalServerError(error));
     }
@@ -29,9 +38,9 @@ const userController = {
     try {
       const coinsSold = await UserSoldCoinsSchema.find({ userId: req.user._id });
 
-      const totalUserCoinSold = coinsSold.length();
+      const totalUserCoinSold = coinsSold.length;
 
-      res.json({ totalUserCoinSold });
+      res.status(200).json({ totalUserCoinSold });
     } catch (error) {
       return next(createError.InternalServerError(error));
     }
